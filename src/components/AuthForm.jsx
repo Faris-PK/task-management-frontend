@@ -15,13 +15,28 @@ const AuthForm = ({ type, onSubmit }) => {
   const validateForm = () => {
     const newErrors = {};
     
+    // Required field validation
+    if (type === 'register' && !formData.username.trim()) {
+      newErrors.username = 'Username is required';
+    }
+    
+    if (!formData.email.trim()) {
+      newErrors.email = 'Email is required';
+    } else if (!/\S+@\S+\.\S+/.test(formData.email)) {
+      newErrors.email = 'Please enter a valid email address';
+    }
+    
+    if (!formData.password) {
+      newErrors.password = 'Password is required';
+    } else if (formData.password.length < 8) {
+      newErrors.password = 'Password must be at least 8 characters long';
+    }
+    
     if (type === 'register') {
-      if (formData.password !== formData.confirmPassword) {
+      if (!formData.confirmPassword) {
+        newErrors.confirmPassword = 'Please confirm your password';
+      } else if (formData.password !== formData.confirmPassword) {
         newErrors.confirmPassword = 'Passwords do not match';
-      }
-      
-      if (formData.password.length < 8) {
-        newErrors.password = 'Password must be at least 8 characters long';
       }
     }
     
@@ -42,6 +57,12 @@ const AuthForm = ({ type, onSubmit }) => {
     if (validateForm()) {
       await onSubmit(formData);
     }
+  };
+
+  const getInputClassName = (fieldName) => {
+    return `block w-full px-3 py-3 border-2 ${
+      errors[fieldName] ? 'border-red-500' : 'border-gray-300'
+    } rounded-xl focus:ring-0 focus:border-blue-500 transition-colors duration-200`;
   };
 
   return (
@@ -71,18 +92,21 @@ const AuthForm = ({ type, onSubmit }) => {
                         : 'top-3 text-gray-500'
                     }`}
                   >
-                    Username
+                    Username<span className="text-red-500">*</span>
                   </label>
                   <input
                     id="username"
                     name="username"
                     type="text"
-                    className="block w-full px-3 py-3 border-2 border-gray-300 rounded-xl focus:ring-0 focus:border-blue-500 transition-colors duration-200"
+                    className={getInputClassName('username')}
                     value={formData.username}
                     onChange={handleChange}
                     onFocus={() => setFocused('username')}
                     onBlur={() => setFocused('')}
                   />
+                  {errors.username && (
+                    <p className="mt-1 text-sm text-red-600">{errors.username}</p>
+                  )}
                 </div>
               )}
               
@@ -95,18 +119,21 @@ const AuthForm = ({ type, onSubmit }) => {
                       : 'top-3 text-gray-500'
                   }`}
                 >
-                  Email address
+                  Email address<span className="text-red-500">*</span>
                 </label>
                 <input
                   id="email"
                   name="email"
                   type="email"
-                  className="block w-full px-3 py-3 border-2 border-gray-300 rounded-xl focus:ring-0 focus:border-blue-500 transition-colors duration-200"
+                  className={getInputClassName('email')}
                   value={formData.email}
                   onChange={handleChange}
                   onFocus={() => setFocused('email')}
                   onBlur={() => setFocused('')}
                 />
+                {errors.email && (
+                  <p className="mt-1 text-sm text-red-600">{errors.email}</p>
+                )}
               </div>
               
               <div className="relative">
@@ -118,13 +145,13 @@ const AuthForm = ({ type, onSubmit }) => {
                       : 'top-3 text-gray-500'
                   }`}
                 >
-                  Password
+                  Password<span className="text-red-500">*</span>
                 </label>
                 <input
                   id="password"
                   name="password"
                   type="password"
-                  className="block w-full px-3 py-3 border-2 border-gray-300 rounded-xl focus:ring-0 focus:border-blue-500 transition-colors duration-200"
+                  className={getInputClassName('password')}
                   value={formData.password}
                   onChange={handleChange}
                   onFocus={() => setFocused('password')}
@@ -145,13 +172,13 @@ const AuthForm = ({ type, onSubmit }) => {
                         : 'top-3 text-gray-500'
                     }`}
                   >
-                    Confirm Password
+                    Confirm Password<span className="text-red-500">*</span>
                   </label>
                   <input
                     id="confirmPassword"
                     name="confirmPassword"
                     type="password"
-                    className="block w-full px-3 py-3 border-2 border-gray-300 rounded-xl focus:ring-0 focus:border-blue-500 transition-colors duration-200"
+                    className={getInputClassName('confirmPassword')}
                     value={formData.confirmPassword}
                     onChange={handleChange}
                     onFocus={() => setFocused('confirmPassword')}
