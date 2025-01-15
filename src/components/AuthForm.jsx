@@ -6,17 +6,42 @@ const AuthForm = ({ type, onSubmit }) => {
     username: '',
     email: '',
     password: '',
+    confirmPassword: ''
   });
   const [focused, setFocused] = useState('');
+  const [errors, setErrors] = useState({});
   const navigate = useNavigate();
+
+  const validateForm = () => {
+    const newErrors = {};
+    
+    if (type === 'register') {
+      if (formData.password !== formData.confirmPassword) {
+        newErrors.confirmPassword = 'Passwords do not match';
+      }
+      
+      if (formData.password.length < 8) {
+        newErrors.password = 'Password must be at least 8 characters long';
+      }
+    }
+    
+    setErrors(newErrors);
+    return Object.keys(newErrors).length === 0;
+  };
 
   const handleChange = (e) => {
     setFormData({ ...formData, [e.target.name]: e.target.value });
+    // Clear errors when user starts typing
+    if (errors[e.target.name]) {
+      setErrors({ ...errors, [e.target.name]: '' });
+    }
   };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    await onSubmit(formData);
+    if (validateForm()) {
+      await onSubmit(formData);
+    }
   };
 
   return (
@@ -105,7 +130,38 @@ const AuthForm = ({ type, onSubmit }) => {
                   onFocus={() => setFocused('password')}
                   onBlur={() => setFocused('')}
                 />
+                {errors.password && (
+                  <p className="mt-1 text-sm text-red-600">{errors.password}</p>
+                )}
               </div>
+
+              {type === 'register' && (
+                <div className="relative">
+                  <label 
+                    htmlFor="confirmPassword"
+                    className={`absolute left-3 transition-all duration-200 ${
+                      focused === 'confirmPassword' || formData.confirmPassword
+                        ? '-top-2 text-xs text-blue-600 bg-white px-1'
+                        : 'top-3 text-gray-500'
+                    }`}
+                  >
+                    Confirm Password
+                  </label>
+                  <input
+                    id="confirmPassword"
+                    name="confirmPassword"
+                    type="password"
+                    className="block w-full px-3 py-3 border-2 border-gray-300 rounded-xl focus:ring-0 focus:border-blue-500 transition-colors duration-200"
+                    value={formData.confirmPassword}
+                    onChange={handleChange}
+                    onFocus={() => setFocused('confirmPassword')}
+                    onBlur={() => setFocused('')}
+                  />
+                  {errors.confirmPassword && (
+                    <p className="mt-1 text-sm text-red-600">{errors.confirmPassword}</p>
+                  )}
+                </div>
+              )}
             </div>
 
             <div>
@@ -126,7 +182,6 @@ const AuthForm = ({ type, onSubmit }) => {
               <span className="px-2 bg-white text-gray-500">Or continue with</span>
             </div>
           </div>
-
 
           <div className="text-center">
             <button
